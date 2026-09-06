@@ -1,0 +1,52 @@
+name: 每日早间美国资讯汇总推送
+
+on:
+  schedule:
+    # 国际标准时间 UTC 22:00 即北京时间次日早晨 06:00
+    - cron: '0 22 * * *'
+  workflow_dispatch: # 支持在 GitHub 网页上手动点击按钮立即测试触发
+
+jobs:
+  daily-news:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库代码
+        uses: actions/checkout@v4
+
+      - name: 配置 Python 环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: 安装依赖包
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 运行早报生成与推送脚本
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
+          FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
+          WECOM_WEBHOOK: ${{ secrets.WECOM_WEBHOOK }}
+          DINGTALK_WEBHOOK: ${{ secrets.DINGTALK_WEBHOOK }}
+          MAIL_HOST: ${{ secrets.MAIL_HOST }}
+          MAIL_PORT: ${{ secrets.MAIL_PORT }}
+          MAIL_USER: ${{ secrets.MAIL_USER }}
+          MAIL_PASS: ${{ secrets.MAIL_PASS }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+        run: |
+          python main.py
+
+      - name: 归档每日早报至 Actions Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-news-report
+          path: daily_report_*.md
+          retention-days: 7
