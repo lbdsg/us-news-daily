@@ -11,51 +11,109 @@ from config import MAX_HOURS_BACK, MAX_ITEMS_PER_FEED
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-# 权威且高频更新的公开 RSS 订阅源（经过实测验证）
+# 权威且高频更新的公开 RSS 订阅源（经过深度扩充与实测验证）
 RSS_SOURCES = {
     "economy": [
+        # 1. 谷歌新闻顶级宏观财经聚合（自动汇集彭博 Bloomberg、路透社 Reuters、金融时报 FT 等）
         {
-            "name": "CNBC Economy",
-            "url": "https://www.cnbc.com/id/20910258/device/rss/rss.html"
+            "name": "Bloomberg/Reuters/FT 聚合 (Google News)",
+            "url": "https://news.google.com/rss/search?q=US+economy+Fed+inflation+when:24h&hl=en-US&gl=US&ceid=US:en"
         },
+        # 2. 华尔街日报 (WSJ)
         {
-            "name": "CNBC Finance",
-            "url": "https://www.cnbc.com/id/10000664/device/rss/rss.html"
-        },
-        {
-            "name": "WSJ Markets",
+            "name": "华尔街日报市场版 (WSJ Markets)",
             "url": "https://feeds.a.dj.com/rss/RSSMarketsMain.xml"
         },
         {
-            "name": "美联储官方发布",
+            "name": "华尔街日报商业版 (WSJ Business)",
+            "url": "https://feeds.a.dj.com/rss/WSJcomUSBusiness.xml"
+        },
+        # 3. CNBC 财经与宏观
+        {
+            "name": "CNBC 宏观经济 (CNBC Economy)",
+            "url": "https://www.cnbc.com/id/20910258/device/rss/rss.html"
+        },
+        {
+            "name": "CNBC 金融市场 (CNBC Finance)",
+            "url": "https://www.cnbc.com/id/10000664/device/rss/rss.html"
+        },
+        # 4. 雅虎全球财经
+        {
+            "name": "雅虎全球财经 (Yahoo Finance)",
+            "url": "https://finance.yahoo.com/news/rssindex"
+        },
+        # 5. MarketWatch 市场实时速递
+        {
+            "name": "MarketWatch 实时热点",
+            "url": "https://feeds.content.dowjones.io/public/rss/mw_realtimeheadlines"
+        },
+        # 6. 美联储官方新闻发布
+        {
+            "name": "美联储官方发布 (Federal Reserve)",
             "url": "https://www.federalreserve.gov/feeds/press_all.xml"
         }
     ],
     "politics": [
+        # 1. 谷歌政治聚合（自动汇集美联社 AP、华盛顿邮报 WaPo、Axios、CNN 等）
         {
-            "name": "Politico Politics",
+            "name": "AP/WaPo/Axios 政治聚合 (Google News)",
+            "url": "https://news.google.com/rss/search?q=US+politics+White+House+Congress+when:24h&hl=en-US&gl=US&ceid=US:en"
+        },
+        # 2. 纽约时报 (NYT)
+        {
+            "name": "纽约时报政治专栏 (NYT Politics)",
+            "url": "https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml"
+        },
+        # 3. Politico 政治前沿
+        {
+            "name": "Politico 全美政治",
             "url": "https://rss.politico.com/politics-news.xml"
         },
+        # 4. 国会山报 (The Hill)
         {
-            "name": "The Hill",
+            "name": "国会山报 (The Hill)",
             "url": "https://thehill.com/feed/"
         },
+        # 5. 美国国家公共电台 (NPR)
         {
-            "name": "NPR Politics",
+            "name": "NPR 深度政治观察",
             "url": "https://feeds.npr.org/1014/rss.xml"
         }
     ],
     "military": [
+        # 1. 谷歌防务聚合（自动汇集五角大楼、战略智库、印太与中东一线行动）
+        {
+            "name": "五角大楼与全球军情聚合 (Google News)",
+            "url": "https://news.google.com/rss/search?q=Pentagon+US+military+defense+when:24h&hl=en-US&gl=US&ceid=US:en"
+        },
+        # 2. 美国国防部官方动态 (DoD News)
         {
             "name": "美国国防部 (DoD News)",
             "url": "https://www.defense.gov/DesktopModules/ArticleCS/RSS.ashx?ContentType=1&Site=945&max=20"
         },
+        # 3. 美国国防部重大军费与采办合同 (DoD Contracts)
         {
-            "name": "Military Times (Pentagon & Congress)",
+            "name": "国防部重大采办 (DoD Contracts)",
+            "url": "https://www.defense.gov/DesktopModules/ArticleCS/RSS.ashx?ContentType=400&Site=945&max=20"
+        },
+        # 4. 防务一号 (Defense One)
+        {
+            "name": "防务一号 (Defense One)",
+            "url": "https://www.defenseone.com/rss/all/"
+        },
+        # 5. 军事时报 (Military Times)
+        {
+            "name": "军事时报 (Military Times)",
             "url": "https://www.militarytimes.com/arc/outboundfeeds/rss/category/news/pentagon-congress/?outputType=xml"
         },
+        # 6. C4ISRNET 军事智能与网络战
         {
-            "name": "Task & Purpose",
+            "name": "C4ISRNET 军事科技",
+            "url": "https://www.c4isrnet.com/arc/outboundfeeds/rss/?outputType=xml"
+        },
+        # 7. 任务与目的 (Task & Purpose)
+        {
+            "name": "前线防务 (Task & Purpose)",
             "url": "https://taskandpurpose.com/feed/"
         }
     ]
