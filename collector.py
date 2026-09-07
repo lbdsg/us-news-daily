@@ -3,6 +3,7 @@ import io
 import time
 from datetime import datetime, timezone, timedelta
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import requests
 import feedparser
 from config import MAX_HOURS_BACK, MAX_ITEMS_PER_FEED
@@ -203,16 +204,17 @@ def is_recent(entry_time_struct, max_hours=MAX_HOURS_BACK) -> bool:
     except Exception:
         return True
 
-def fetch_feed(feed_info: dict, max_hours: int = MAX_HOURS_BACK) -> list:
-    """抓取单个 RSS 源并提取核心字段"""
+def fetch_feed(feed_info: dict, max_hours: int = MAX_HOURS_BACK) -> tuple:
+    """抓取单个 RSS 源并提取核心字段，故障时自动隔离报错并返回空列表，不影响其他源"""
     name = feed_info["name"]
     url = feed_info["url"]
     items = []
+    success = False
     try:
-        resp = requests.get(url, headers=HEADERS, timeout=12)
+        resp = requests.get(url, headers=HEADERS, timeout=9)
         if resp.status_code != 200:
-            print(f"[{name}] 请求失败，状态码: {resp.status_code}")
-            return items
+            print(f"⚠️ [信源异常] {name} 响应码: {resp.status_code}，已自动跳过")
+            return items, False
 
         feed = feedparser.parse(resp.content)
         for entry in feed.entries[:MAX_ITEMS_PER_FEED]:
@@ -232,42 +234,74 @@ def fetch_feed(feed_info: dict, max_hours: int = MAX_HOURS_BACK) -> list:
                     "link": link,
                     "summary": summary[:350]  # 适量截取避免过长
                 })
+        success = True
     except Exception as e:
-        print(f"[{name}] 抓取异常: {e}")
-    return items
+        print(f"⚠️ [信源故障] {name} 访问失败: {e}，已自动隔离")
+        success = False
+    return items, success
 
 def collect_news() -> dict:
-    """按分类汇总所有资讯，带有周末/假日自适应防空窗兜底"""
+    """按分类高并发汇总资讯，各个信源完全独立隔离，任意信源故障绝不影响正常信源推送"""
     results = {
         "economy": [],
         "politics": [],
         "military": []
     }
     
+    total_sources = sum(len(feeds) for feeds in RSS_SOURCES.values())
+    ok_count = 0
+    fail_count = 0
+    print(f"🚀 开始并发抓取全网 {total_sources} 个权威信源（自动隔离故障信源）...")
+
     for category, feeds in RSS_SOURCES.items():
-        print(f"正在抓取分类: {category}...")
         seen_titles = set()
-        for feed in feeds:
-            feed_items = fetch_feed(feed, max_hours=MAX_HOURS_BACK)
-            for item in feed_items:
-                simplified_title = re.sub(r"[^\w]", "", item["title"].lower())
-                if simplified_title not in seen_titles:
-                    seen_titles.add(simplified_title)
-                    results[category].append(item)
+        category_items = []
+        
+        # 采用多线程独立抓取：每个信源在独立线程中执行，单个信源挂掉或超时绝不阻塞整体进度
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            future_to_feed = {
+                executor.submit(fetch_feed, feed, MAX_HOURS_BACK): feed
+                for feed in feeds
+            }
+            for future in as_completed(future_to_feed):
+                feed_info = future_to_feed[future]
+                try:
+                    feed_items, is_ok = future.result()
+                    if is_ok:
+                        ok_count += 1
+                    else:
+                        fail_count += 1
+                    category_items.extend(feed_items)
+                except Exception as e:
+                    fail_count += 1
+                    print(f"⚠️ [隔离故障] {feed_info['name']}: {e}")
+
+        # 本地去重聚合
+        for item in category_items:
+            simplified_title = re.sub(r"[^\w]", "", item["title"].lower())
+            if simplified_title not in seen_titles:
+                seen_titles.add(simplified_title)
+                results[category].append(item)
                     
-        # 兜底保障：若周末或发稿淡季条数偏少（少于3条），适度放宽时间窗口至 48 小时
+        # 兜底保障：若发稿淡季条目偏少（少于3条），适度放宽时间窗口至 48 小时
         if len(results[category]) < 3:
             print(f"分类 [{category}] 过去 24 小时条目较少（{len(results[category])}条），自动扩大时间窗口至 48 小时获取深度资讯...")
-            for feed in feeds:
-                feed_items = fetch_feed(feed, max_hours=48)
-                for item in feed_items:
-                    simplified_title = re.sub(r"[^\w]", "", item["title"].lower())
-                    if simplified_title not in seen_titles:
-                        seen_titles.add(simplified_title)
-                        results[category].append(item)
+            with ThreadPoolExecutor(max_workers=8) as executor:
+                futures = [executor.submit(fetch_feed, feed, 48) for feed in feeds]
+                for future in as_completed(futures):
+                    try:
+                        feed_items, _ = future.result()
+                        for item in feed_items:
+                            simplified_title = re.sub(r"[^\w]", "", item["title"].lower())
+                            if simplified_title not in seen_titles:
+                                seen_titles.add(simplified_title)
+                                results[category].append(item)
+                    except Exception:
+                        pass
 
-        print(f"分类 [{category}] 采集完成，共 {len(results[category])} 条。")
-        
+        print(f"✅ 分类 [{category}] 采集完成，共 {len(results[category])} 条有效情报。")
+
+    print(f"📊 [信源健康度汇总] 正常响应: {ok_count} 个 | 故障隔离: {fail_count} 个 | 汇聚有效情报: {sum(len(v) for v in results.values())} 条。")
     return results
 
 if __name__ == "__main__":
