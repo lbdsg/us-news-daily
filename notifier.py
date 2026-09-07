@@ -1,5 +1,6 @@
 import sys
 import time
+import re
 import smtplib
 from email.header import Header
 from email.mime.text import MIMEText
@@ -285,32 +286,60 @@ def chunk_text(text: str, max_bytes: int = 3200) -> list:
     return chunks
 
 def send_ntfy(title: str, content: str) -> bool:
-    """通过 ntfy.sh 推送到手机或网页端（自适应分段，免注册/免密码）"""
+    """通过 ntfy.sh 推送到手机或网页端（主题化结构美化 + 自适应分段，免注册/免密码）"""
     if not NTFY_TOPIC:
         return False
     try:
         url = "https://ntfy.sh"
-        chunks = chunk_text(content, max_bytes=3200)
-        total = len(chunks)
+        
+        # 智能结构化分卷：按内参核心板块进行逻辑切分，确保每段开头都是清晰的专题 Banner，绝不破坏排版
+        parts = re.split(r'\n(?=### [^\n]*[一二三四]、)', content)
+        custom_chunks = []
+        if len(parts) >= 5:
+            c1 = (parts[0] + "\n\n" + parts[1]).strip()
+            c2 = parts[2].strip()
+            c3 = parts[3].strip()
+            c4 = parts[4].strip()
+            # 验证各板块字节是否安全（均低于 ntfy 4000 字节上限）
+            if (len(c1.encode("utf-8")) < 3800 and 
+                len(c2.encode("utf-8")) < 3800 and 
+                len(c3.encode("utf-8")) < 3800 and
+                len(c4.encode("utf-8")) < 3800):
+                custom_chunks = [
+                    (f"{title} | 导读与宏观财经 (1/4)", c1, ["newspaper", "chart_with_upwards_trend"]),
+                    (f"{title} | 政治与大国外交 (2/4)", c2, ["classical_building", "scroll"]),
+                    (f"{title} | 军情与五角大楼 (3/4)", c3, ["shield", "military_helmet"]),
+                    (f"{title} | 综合研判与展望 (4/4)", c4, ["crystal_ball", "bulb"])
+                ]
+
+        if not custom_chunks:
+            # 兜底通用平滑分段
+            raw_chunks = chunk_text(content, max_bytes=3200)
+            total = len(raw_chunks)
+            custom_chunks = [
+                (f"{title} ({i}/{total})" if total > 1 else title, c, ["newspaper", "flag_us"])
+                for i, c in enumerate(raw_chunks, 1)
+            ]
+
+        total = len(custom_chunks)
         all_success = True
 
-        for idx, chunk in enumerate(chunks, 1):
-            part_title = f"{title} ({idx}/{total})" if total > 1 else title
+        for part_title, chunk, tags in custom_chunks:
             payload = {
                 "topic": NTFY_TOPIC,
                 "title": part_title,
                 "message": chunk,
                 "markdown": True,
-                "tags": ["newspaper", "flag_us"]
+                "tags": tags
             }
             resp = requests.post(url, json=payload, timeout=15)
             if resp.status_code != 200:
                 all_success = False
-                print(f"❌ [ntfy] 分段 {idx}/{total} 推送失败，状态码: {resp.status_code}")
-            time.sleep(0.5)
+                print(f"❌ [ntfy] 推送失败: {part_title}，状态码: {resp.status_code}")
+            time.sleep(0.6)
 
         if all_success:
-            print(f"✅ [ntfy] 成功完整推送到频道: {NTFY_TOPIC} (共 {total} 段)")
+            print(f"✅ [ntfy] 成功完整推送到频道: {NTFY_TOPIC} (共 {total} 篇)")
             return True
         return False
     except Exception as e:

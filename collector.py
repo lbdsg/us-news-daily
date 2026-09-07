@@ -61,6 +61,16 @@ RSS_SOURCES = {
         {
             "name": "ZeroHedge 宏观风向",
             "url": "https://feeds.feedburner.com/zerohedge/feed"
+        },
+        # 9. Nick Timiraos 专栏（“新美联储通讯社”利率独家研判）
+        {
+            "name": "Nick Timiraos 专栏 (新美联储通讯社)",
+            "url": "https://news.google.com/rss/search?q=%22Nick+Timiraos%22+when:3d&hl=en-US&gl=US&ceid=US:en"
+        },
+        # 10. Doomberg 顶流宏观能源与大宗商品观察
+        {
+            "name": "Doomberg 宏观能源内参",
+            "url": "https://doomberg.substack.com/feed"
         }
     ],
     "politics": [
@@ -69,32 +79,37 @@ RSS_SOURCES = {
             "name": "AP/WaPo/Axios 政治聚合 (Google News)",
             "url": "https://news.google.com/rss/search?q=US+politics+White+House+Congress+when:24h&hl=en-US&gl=US&ceid=US:en"
         },
-        # 2. 纽约时报 (NYT)
+        # 2. Punchbowl News（Jake Sherman 创办，国会山第一闭门内参）
+        {
+            "name": "Punchbowl News (Jake Sherman 国会第一内参)",
+            "url": "https://punchbowl.news/feed/"
+        },
+        # 3. 纽约时报 (NYT)
         {
             "name": "纽约时报政治专栏 (NYT Politics)",
             "url": "https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml"
         },
-        # 3. Politico 政治前沿
+        # 4. Politico 政治前沿
         {
             "name": "Politico 全美政治",
             "url": "https://rss.politico.com/politics-news.xml"
         },
-        # 4. 国会山报 (The Hill)
+        # 5. 国会山报 (The Hill)
         {
             "name": "国会山报 (The Hill)",
             "url": "https://thehill.com/feed/"
         },
-        # 5. 国会点名报 (Roll Call - 源自 awesome-osint)
+        # 6. 国会点名报 (Roll Call - 源自 awesome-osint)
         {
             "name": "国会点名报 (Roll Call)",
             "url": "https://rollcall.com/feed/"
         },
-        # 6. 美国对外关系委员会 / 外交事务期刊 (Foreign Affairs / CFR - 源自 awesome-osint)
+        # 7. 美国对外关系委员会 / 外交事务期刊 (Foreign Affairs / CFR - 源自 awesome-osint)
         {
             "name": "外交事务期刊 (Foreign Affairs)",
             "url": "https://www.foreignaffairs.com/rss.xml"
         },
-        # 7. 美国国家公共电台 (NPR)
+        # 8. 美国国家公共电台 (NPR)
         {
             "name": "NPR 深度政治观察",
             "url": "https://feeds.npr.org/1014/rss.xml"
@@ -146,7 +161,12 @@ RSS_SOURCES = {
             "name": "岩石战争战略智库 (War on the Rocks)",
             "url": "https://warontherocks.com/feed/"
         },
-        # 10. 任务与目的 (Task & Purpose)
+        # 10. Mick Ryan 战略防务专栏（退役陆军少将，专注常规战演变）
+        {
+            "name": "Mick Ryan 战略防务 (退役少将)",
+            "url": "https://mickryan.substack.com/feed"
+        },
+        # 11. 任务与目的 (Task & Purpose)
         {
             "name": "前线防务 (Task & Purpose)",
             "url": "https://taskandpurpose.com/feed/"
