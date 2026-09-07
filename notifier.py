@@ -319,8 +319,11 @@ def send_ntfy(title: str, content: str) -> bool:
 
 def dispatch_notification(content: str):
     """统一分发通知"""
-    beijing_today = datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d")
-    title = f"🇺🇸 美国核心动态内参 ({beijing_today})"
+    beijing_now = datetime.now(timezone(timedelta(hours=8)))
+    beijing_today = beijing_now.strftime("%Y-%m-%d")
+    hour = beijing_now.hour
+    edition = "早间版" if 4 <= hour < 11 else ("午间版" if 11 <= hour < 16 else "晚间版")
+    title = f"🇺🇸 美国核心动态内参·{edition} ({beijing_today})"
 
     # 本地始终备份一份 markdown 文件
     filename = f"daily_report_{beijing_today.replace('-', '')}.md"

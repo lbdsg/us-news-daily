@@ -36,26 +36,38 @@ def generate_summary(news_data: dict) -> str:
 
     combined_text = "\n".join(raw_content)
 
-    beijing_time = datetime.now(timezone(timedelta(hours=8))).strftime("%Y年%m月%d日")
+    beijing_now = datetime.now(timezone(timedelta(hours=8)))
+    beijing_date = beijing_now.strftime("%Y年%m月%d日")
+    hour = beijing_now.hour
+    if 4 <= hour < 11:
+        edition = "早间内参"
+        focus_hint = "重点聚焦昨夜美股收盘动态、五角大楼深夜部署及今日全美战略前瞻。"
+    elif 11 <= hour < 16:
+        edition = "午间速递"
+        focus_hint = "重点聚焦亚太金融联动反应、华盛顿日间政策动向与突发重大热点进展。"
+    else:
+        edition = "晚间盘点"
+        focus_hint = "重点复盘全天大事件脉络、今晚美股开盘前瞻及地缘防务最新演变。"
 
     system_prompt = (
         "你是一位资深的全球宏观经济、地缘政治与军事防务战略分析专家。"
-        "你的任务是为高净值投资人及战略决策者编写一份《美国每日核心动态内参》。"
+        f"你的任务是为高净值投资人及战略决策者编写一份《美国核心动态内参 · {edition}》。"
+        f"时段定位：{focus_hint}\n"
         "要求：\n"
         "1. 严谨、专业、去粗取精，剔除低价值碎片信息，聚焦对全球局势或资本市场具有实质影响的大事件；\n"
         "2. 中文表述要地道精炼，专业术语准确（如美联储点阵图、CPI、五角大楼防务预算、印太司令部等）；\n"
         "3. 采用精美整洁的 Markdown 格式输出，排版需适合手机端阅读（多用重点加粗、要点列表，分段清晰）。"
     )
 
-    user_prompt = f"""以下是今天截至 {beijing_time} 采集到的美国最新权威英文资讯原料：
+    user_prompt = f"""以下是当前截至 {beijing_date} 采集到的美国最新权威英文资讯原料：
 
 {combined_text}
 
-请根据以上素材，撰写今日《美国核心动态内参早报》，包含以下五个核心板块：
+请根据以上素材，撰写今日《美国核心动态内参 · {edition}》，包含以下核心板块：
 
-# 🇺🇸 美国核心动态内参（{beijing_time}）
+# 🇺🇸 美国核心动态内参 · {edition}（{beijing_date}）
 
-> 📌 **今日导读**（用 3 句话分别总结经济、政治、军事领域今天最重磅的看点）
+> 📌 **时段要点导读**（用 3 句话分别提炼经济、政治、军事领域此时段最重磅的看点）
 
 ---
 
