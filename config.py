@@ -17,8 +17,8 @@ is_gemini = LLM_API_KEY.startswith("AIza") or LLM_API_KEY.startswith("AQ.")
 default_base_url = "https://generativelanguage.googleapis.com/v1beta/openai/" if is_gemini else "https://api.deepseek.com"
 default_model = "gemini-3.5-flash-lite" if is_gemini else "deepseek-chat"
 
-LLM_BASE_URL = os.getenv("LLM_BASE_URL", default_base_url).strip()
-LLM_MODEL = os.getenv("LLM_MODEL", default_model).strip()
+LLM_BASE_URL = os.getenv("LLM_BASE_URL", "").strip() or default_base_url
+LLM_MODEL = os.getenv("LLM_MODEL", "").strip() or default_model
 
 # 推送渠道配置
 NTFY_TOPIC = os.getenv("NTFY_TOPIC", "").strip() or "amenews123138"

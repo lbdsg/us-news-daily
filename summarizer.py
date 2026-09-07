@@ -92,5 +92,24 @@ def generate_summary(news_data: dict) -> str:
         )
         return response.choices[0].message.content
     except Exception as e:
-        print(f"调用大模型 API 异常: {e}")
+        print(f"调用 OpenAI 兼容接口异常: {e}")
+        # 双重保险：针对 Gemini API，若兼容端点连接波动，自动通过谷歌原生 REST 接口兜底
+        if "generativelanguage.googleapis.com" in LLM_BASE_URL or LLM_API_KEY.startswith(("AIza", "AQ.")):
+            try:
+                print("正在通过谷歌原生 REST 接口兜底生成内参...")
+                import requests
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{LLM_MODEL}:generateContent?key={LLM_API_KEY}"
+                payload = {
+                    "contents": [{"parts": [{"text": f"{system_prompt}\n\n{user_prompt}"}]}],
+                    "generationConfig": {"temperature": 0.4}
+                }
+                res = requests.post(url, json=payload, timeout=90)
+                if res.status_code == 200:
+                    data = res.json()
+                    return data["candidates"][0]["content"]["parts"][0]["text"]
+                else:
+                    print(f"谷歌原生接口返回错误: {res.status_code} {res.text[:200]}")
+            except Exception as err2:
+                print(f"谷歌原生接口调用异常: {err2}")
+
         return f"⚠️ 晨报生成失败，大模型接口调用出错: {e}"
