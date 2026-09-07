@@ -9,12 +9,40 @@ if hasattr(sys.stdout, "reconfigure"):
 from collector import collect_news
 from summarizer import generate_summary
 from notifier import dispatch_notification
+from config import NTFY_TOPIC
+import json
+import os
+import requests
 
 def main():
-    beijing_now = datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+    beijing_dt = datetime.now(timezone(timedelta(hours=8)))
+    beijing_now = beijing_dt.strftime("%Y-%m-%d %H:%M:%S")
     print(f"==================================================")
     print(f"🚀 开始执行美国资讯自动汇总内参任务 - 北京时间: {beijing_now}")
     print(f"==================================================")
+
+    # 智能防重机制：若是云端容灾轮询唤醒，且本时段版本今日已成功推送到手机，直接优雅退出
+    force_run = "--force" in sys.argv or os.getenv("FORCE_RUN", "").lower() in ("true", "1")
+    if not force_run and NTFY_TOPIC:
+        try:
+            today_str = beijing_dt.strftime("%Y-%m-%d")
+            hour = beijing_dt.hour
+            edition = "早间版" if 4 <= hour < 11 else ("午间版" if 11 <= hour < 16 else "晚间版")
+            expected_keyword = f"内参·{edition} ({today_str})"
+            
+            resp = requests.get(f"https://ntfy.sh/{NTFY_TOPIC}/json?poll=1", timeout=8)
+            if resp.status_code == 200:
+                for line in resp.text.strip().split("\n"):
+                    if not line: continue
+                    try:
+                        msg_data = json.loads(line)
+                        if expected_keyword in msg_data.get("title", ""):
+                            print(f"✨ [智能防重机制] 今日【{edition}】({today_str})已成功送达手机，无需重复抓取。任务优雅结束。")
+                            return
+                    except Exception:
+                        pass
+        except Exception as e:
+            print(f"防重检测网络波动，将正常执行任务: {e}")
 
     # 第一步：资讯采集
     print("\n[Step 1/3] 正在从公开权威源抓取经济、政治、军事资讯...")
