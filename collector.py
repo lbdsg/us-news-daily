@@ -51,6 +51,16 @@ RSS_SOURCES = {
         {
             "name": "美联储官方发布 (Federal Reserve)",
             "url": "https://www.federalreserve.gov/feeds/press_all.xml"
+        },
+        # 7. 圣路易斯联储 FRED 经济研究中心 (源自 awesome-finance)
+        {
+            "name": "圣路易斯联储研究 (FRED)",
+            "url": "https://news.research.stlouisfed.org/feed/"
+        },
+        # 8. ZeroHedge 宏观避险与华尔街流动性预警 (源自 awesome-finance)
+        {
+            "name": "ZeroHedge 宏观风向",
+            "url": "https://feeds.feedburner.com/zerohedge/feed"
         }
     ],
     "politics": [
@@ -74,7 +84,17 @@ RSS_SOURCES = {
             "name": "国会山报 (The Hill)",
             "url": "https://thehill.com/feed/"
         },
-        # 5. 美国国家公共电台 (NPR)
+        # 5. 国会点名报 (Roll Call - 源自 awesome-osint)
+        {
+            "name": "国会点名报 (Roll Call)",
+            "url": "https://rollcall.com/feed/"
+        },
+        # 6. 美国对外关系委员会 / 外交事务期刊 (Foreign Affairs / CFR - 源自 awesome-osint)
+        {
+            "name": "外交事务期刊 (Foreign Affairs)",
+            "url": "https://www.foreignaffairs.com/rss.xml"
+        },
+        # 7. 美国国家公共电台 (NPR)
         {
             "name": "NPR 深度政治观察",
             "url": "https://feeds.npr.org/1014/rss.xml"
@@ -96,22 +116,37 @@ RSS_SOURCES = {
             "name": "国防部重大采办 (DoD Contracts)",
             "url": "https://www.defense.gov/DesktopModules/ArticleCS/RSS.ashx?ContentType=400&Site=945&max=20"
         },
-        # 4. 防务一号 (Defense One)
+        # 4. 防务日报武器采办与对外军售 (Defense Daily - 源自 awesome-osint)
+        {
+            "name": "防务日报军购军售 (Defense Daily)",
+            "url": "https://www.defensedaily.com/feed/"
+        },
+        # 5. 防务新闻主站 (Defense News - 源自 awesome-osint)
+        {
+            "name": "防务新闻旗舰 (Defense News)",
+            "url": "https://www.defensenews.com/arc/outboundfeeds/rss/?outputType=xml"
+        },
+        # 6. 防务一号 (Defense One)
         {
             "name": "防务一号 (Defense One)",
             "url": "https://www.defenseone.com/rss/all/"
         },
-        # 5. 军事时报 (Military Times)
+        # 7. 军事时报 (Military Times)
         {
             "name": "军事时报 (Military Times)",
             "url": "https://www.militarytimes.com/arc/outboundfeeds/rss/category/news/pentagon-congress/?outputType=xml"
         },
-        # 6. C4ISRNET 军事智能与网络战
+        # 8. C4ISRNET 军事智能与网络战
         {
             "name": "C4ISRNET 军事科技",
             "url": "https://www.c4isrnet.com/arc/outboundfeeds/rss/?outputType=xml"
         },
-        # 7. 任务与目的 (Task & Purpose)
+        # 9. 岩石战争防务学者智库 (War on the Rocks - 源自 awesome-osint)
+        {
+            "name": "岩石战争战略智库 (War on the Rocks)",
+            "url": "https://warontherocks.com/feed/"
+        },
+        # 10. 任务与目的 (Task & Purpose)
         {
             "name": "前线防务 (Task & Purpose)",
             "url": "https://taskandpurpose.com/feed/"
