@@ -10,6 +10,7 @@ env/
 
 # Output files
 daily_report_*.md
+oil_report_*.md
 *.log
 
 # OS & IDE

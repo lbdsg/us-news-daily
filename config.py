@@ -22,6 +22,7 @@ LLM_MODEL = os.getenv("LLM_MODEL", "").strip() or default_model
 
 # 推送渠道配置
 NTFY_TOPIC = os.getenv("NTFY_TOPIC", "").strip() or "amenews123138"
+NTFY_TOPIC_OIL = os.getenv("NTFY_TOPIC_OIL", "").strip() or "yuanyou123456"
 PUSHPLUS_TOKEN = os.getenv("PUSHPLUS_TOKEN", "").strip()
 SERVERCHAN_KEY = os.getenv("SERVERCHAN_KEY", "").strip()
 FEISHU_WEBHOOK = os.getenv("FEISHU_WEBHOOK", "").strip()

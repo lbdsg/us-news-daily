@@ -1,0 +1,51 @@
+name: 原油化工 24 小时双小时行情与情报推送 (24/7)
+
+on:
+  schedule:
+    # 国际标准时间 UTC 逢偶数整点运行 (00, 02, 04, 06, 08, 10, 12, 14, 16, 18, 20, 22)
+    # 对应北京时间逢偶数整点 (08:00, 10:00, 12:00, 14:00, 16:00, 18:00, 20:00, 22:00, 00:00, 02:00, 04:00, 06:00)
+    # 全天 24 小时无缝覆盖，每 2 小时准时抓取最新实时盘面与石化资讯
+    - cron: '0 */2 * * *'
+
+  workflow_dispatch: # 支持在 GitHub 网页上手动点击按钮立即测试触发
+    inputs:
+      force:
+        description: '是否强制重新生成与推送 (忽略防重)'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  oil-news-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库代码
+        uses: actions/checkout@v4
+
+      - name: 配置 Python 环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: 安装依赖包
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 运行原油化工双小时研报生成与推送脚本
+        env:
+          NTFY_TOPIC_OIL: ${{ secrets.NTFY_TOPIC_OIL }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+        run: |
+          python main_oil.py ${{ inputs.force && '--force' || '' }}
+
+      - name: 归档原油研报至 Actions Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: oil-news-report
+          path: oil_report_*.md
+          retention-days: 7
