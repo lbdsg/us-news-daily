@@ -336,7 +336,7 @@ def send_ntfy(title: str, content: str) -> bool:
             if resp.status_code != 200:
                 all_success = False
                 print(f"❌ [ntfy] 推送失败: {part_title}，状态码: {resp.status_code}")
-            time.sleep(0.6)
+            time.sleep(1.2)
 
         if all_success:
             print(f"✅ [ntfy] 成功完整推送到频道: {NTFY_TOPIC} (共 {total} 篇)")
