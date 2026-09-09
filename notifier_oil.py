@@ -40,21 +40,27 @@ def send_ntfy_oil(title: str, content: str) -> bool:
         is_night = 0 <= hour < 7
         priority = 2 if is_night else 3
 
-        # 尝试根据板块划分（### 一、二、三）切分
-        parts = re.split(r'\n(?=### [^\n]*[一二三]、)', content)
+        # 智能分卷：若全文在 3800 字节以内，优先作为 1 条完整通知发送（手机端体验最佳，单次弹窗即可阅读全篇）
         custom_chunks = []
-        if len(parts) >= 3:
-            c1 = parts[0].strip()
-            c2 = parts[1].strip()
-            c3 = "\n\n".join(parts[2:]).strip()
-            if (len(c1.encode("utf-8")) < 3600 and
-                len(c2.encode("utf-8")) < 3600 and
-                len(c3.encode("utf-8")) < 3600):
-                custom_chunks = [
-                    (f"{title} | 盘面看板与地缘动态 (1/3)", c1, ["oil_drum", "chart_with_upwards_trend"]),
-                    (f"{title} | 石化产业链动态 (2/3)", c2, ["test_tube", "fuelpump"]),
-                    (f"{title} | 短线研判与后市策略 (3/3)", c3, ["bulb", "gem"])
-                ]
+        if len(content.encode("utf-8")) < 3800:
+            custom_chunks = [
+                (title, content, ["oil_drum", "chart_with_upwards_trend", "fuelpump", "test_tube"])
+            ]
+        else:
+            # 超长时尝试根据板块划分（### 一、二、三）切分
+            parts = re.split(r'\n(?=### [^\n]*[一二三]、)', content)
+            if len(parts) >= 3:
+                c1 = parts[0].strip()
+                c2 = parts[1].strip()
+                c3 = "\n\n".join(parts[2:]).strip()
+                if (len(c1.encode("utf-8")) < 3600 and
+                    len(c2.encode("utf-8")) < 3600 and
+                    len(c3.encode("utf-8")) < 3600):
+                    custom_chunks = [
+                        (f"{title} | 盘面看板与地缘动态 (1/3)", c1, ["oil_drum", "chart_with_upwards_trend"]),
+                        (f"{title} | 石化产业链动态 (2/3)", c2, ["test_tube", "fuelpump"]),
+                        (f"{title} | 短线研判与后市策略 (3/3)", c3, ["bulb", "gem"])
+                    ]
 
         if not custom_chunks:
             raw_chunks = chunk_text(content, max_bytes=3200)
