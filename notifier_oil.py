@@ -80,7 +80,19 @@ def send_ntfy_oil(title: str, content: str) -> bool:
                 "message": chunk,
                 "markdown": True,
                 "priority": priority,
-                "tags": tags
+                "tags": tags,
+                "actions": [
+                    {
+                        "action": "view",
+                        "label": "📊 实时布油 K线",
+                        "url": "https://finance.yahoo.com/quote/BZ=F"
+                    },
+                    {
+                        "action": "view",
+                        "label": "📖 网页端频道",
+                        "url": f"https://ntfy.sh/{topic}"
+                    }
+                ]
             }
             resp = requests.post(url, json=payload, timeout=15)
             if resp.status_code != 200:
