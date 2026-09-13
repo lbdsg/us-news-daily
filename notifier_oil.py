@@ -110,14 +110,13 @@ def send_ntfy_oil(title: str, content: str) -> bool:
         return False
 
 def dispatch_oil_notification(content: str):
-    """统一分发原油化工研报通知并本地留存归档"""
+    """统一分发原油化工每日早报通知并本地留存归档"""
     beijing_now = datetime.now(timezone(timedelta(hours=8)))
     beijing_today = beijing_now.strftime("%Y-%m-%d")
-    hour = beijing_now.hour
-    title = f"🛢️ 原油化工核心内参 · {hour:02d}:00档 ({beijing_today})"
+    title = f"🛢️ 原油化工每日早报 ({beijing_today})"
 
     # 本地始终备份一份 markdown 文件
-    filename = f"oil_report_{beijing_today.replace('-', '')}_{hour:02d}.md"
+    filename = f"oil_report_{beijing_today.replace('-', '')}.md"
     try:
         with open(filename, "w", encoding="utf-8") as f:
             f.write(content)

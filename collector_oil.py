@@ -79,7 +79,7 @@ RSS_SOURCES_OIL = {
         },
         {
             "name": "路透/彭博/FT 国际原油聚合 (Google News)",
-            "url": "https://news.google.com/rss/search?q=(crude+oil+OR+petroleum+OR+OPEC+OR+Brent+OR+WTI)+when:4h&hl=en-US&gl=US&ceid=US:en"
+            "url": "https://news.google.com/rss/search?q=(crude+oil+OR+petroleum+OR+OPEC+OR+Brent+OR+WTI)+when:24h&hl=en-US&gl=US&ceid=US:en"
         },
         {
             "name": "MarketWatch 大宗热点",
@@ -98,19 +98,19 @@ RSS_SOURCES_OIL = {
         },
         {
             "name": "全球石化与塑料聚合 (Google News)",
-            "url": "https://news.google.com/rss/search?q=(petrochemical+OR+plastics+industry+OR+naphtha+OR+ethylene+OR+refinery)+when:12h&hl=en-US&gl=US&ceid=US:en"
+            "url": "https://news.google.com/rss/search?q=(petrochemical+OR+plastics+industry+OR+naphtha+OR+ethylene+OR+refinery)+when:24h&hl=en-US&gl=US&ceid=US:en"
         }
     ],
     # 3. 国内原油期货与化工现货动态（聚酯/聚烯烃/甲醇）
     "china_macro_commodity": [
         {
             "name": "国内原油石化与大宗商品前沿 (Google News)",
-            "url": "https://news.google.com/rss/search?q=(原油+OR+石化+OR+成品油+OR+聚酯+OR+PTA+OR+聚丙烯+OR+甲醇+OR+欧佩克)+when:6h&hl=zh-CN&gl=CN&ceid=CN:zh-Hans"
+            "url": "https://news.google.com/rss/search?q=(原油+OR+石化+OR+成品油+OR+聚酯+OR+PTA+OR+聚丙烯+OR+甲醇+OR+欧佩克)+when:24h&hl=zh-CN&gl=CN&ceid=CN:zh-Hans"
         }
     ]
 }
 
-def is_recent(entry_time_struct, max_hours=6) -> bool:
+def is_recent(entry_time_struct, max_hours=24) -> bool:
     """判断文章是否在最近指定小时内"""
     if not entry_time_struct:
         return True
@@ -178,7 +178,7 @@ def collect_oil_news() -> dict:
 
         with ThreadPoolExecutor(max_workers=6) as executor:
             future_to_feed = {
-                executor.submit(fetch_feed, feed, 6): feed
+                executor.submit(fetch_feed, feed, 24): feed
                 for feed in feeds
             }
             for future in as_completed(future_to_feed):
@@ -195,10 +195,10 @@ def collect_oil_news() -> dict:
                 seen_titles.add(simplified_title)
                 results[category].append(item)
 
-        # 兜底保障：若最新 6 小时内条目较少，适度放宽至 18 小时以保证情报深度
+        # 兜底保障：若最新 24 小时内条目较少，适度放宽至 48 小时以保证情报深度
         if len(results[category]) < 3:
             with ThreadPoolExecutor(max_workers=6) as executor:
-                futures = [executor.submit(fetch_feed, feed, 18) for feed in feeds]
+                futures = [executor.submit(fetch_feed, feed, 48) for feed in feeds]
                 for future in as_completed(futures):
                     try:
                         feed_items, _ = future.result()

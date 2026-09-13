@@ -21,36 +21,29 @@ def main():
     today_str = beijing_dt.strftime("%Y-%m-%d")
 
     print("==================================================")
-    print(f"🚀 开始执行【原油化工 24 小时双小时推送任务】")
-    print(f"⏰ 当前北京时间: {beijing_now} ({hour:02d}:00 档)")
+    print(f"🚀 开始执行【原油化工每日早报推送任务】")
+    print(f"⏰ 当前北京时间: {beijing_now}")
     print(f"📢 目标频道: {NTFY_TOPIC_OIL}")
     print("==================================================")
 
-    # 智能防重与自愈机制：检查距离上一次推送是否已满 90 分钟 (约 1.5~2 小时)
+    # 智能防重机制：检查今日早报是否已成功推送到频道
     force_run = "--force" in sys.argv or os.getenv("FORCE_RUN", "").lower() in ("true", "1")
     if not force_run and NTFY_TOPIC_OIL:
         try:
+            expected_keyword = f"原油化工每日早报 ({today_str})"
             resp = requests.get(f"https://ntfy.sh/{NTFY_TOPIC_OIL}/json?poll=1", timeout=8)
             if resp.status_code == 200:
-                last_push_ts = 0
                 for line in resp.text.strip().split("\n"):
                     if not line:
                         continue
                     try:
                         msg_data = json.loads(line)
-                        if "原油化工核心内参" in msg_data.get("title", ""):
-                            t = msg_data.get("time", 0)
-                            if t > last_push_ts:
-                                last_push_ts = t
+                        msg_title = msg_data.get("title", "")
+                        if expected_keyword in msg_title or (today_str in msg_title and "原油化工" in msg_title):
+                            print(f"✨ [智能防重] 今日原油化工早报 ({today_str}) 已成功送达，无需重复抓取。任务优雅结束。")
+                            return
                     except Exception:
                         pass
-
-                current_ts = datetime.now(timezone.utc).timestamp()
-                if last_push_ts > 0:
-                    diff_minutes = (current_ts - last_push_ts) / 60
-                    if diff_minutes < 90:
-                        print(f"✨ [智能防重] 距离上一次推送仅过去 {diff_minutes:.1f} 分钟（需满 90 分钟），暂无须重复推送。任务优雅结束。")
-                        return
         except Exception as e:
             print(f"防重检测网络波动，将正常执行任务: {e}")
 
